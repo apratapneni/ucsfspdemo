@@ -141,16 +141,8 @@ Learning Objectives:
 
     return jsonify(grading=query_system(system_prompt, message_string, 2048).strip().replace("\n", "<br>"))
 
-#display index.html
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-#display case_1.html
-@app.route('/case_1.html')
-def case_1():
-    return render_template('case_1.html')
-
+# Set random_case.html as the default route
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/random_case.html', methods=['GET', 'POST'])
 def random_case():
     if request.method == 'GET':
