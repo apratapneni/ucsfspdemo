@@ -11,7 +11,7 @@ client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
 
 app = Flask(__name__)
 
-def query_system(system_prompt, prompt, max_tokens=512):
+def query_system(system_prompt, prompt, max_tokens=256):
     '''
     Literally just a helper function that queries GPT
     '''
@@ -26,7 +26,7 @@ def query_system(system_prompt, prompt, max_tokens=512):
           top_p=0.95
         )['choices'][0]['message']['content']
 
-def query(prompt, max_tokens=512):
+def query(prompt, max_tokens=256):
     '''
     Literally just a helper function that queries GPT
     '''
@@ -40,7 +40,7 @@ def query(prompt, max_tokens=512):
           top_p=0.95
         )['choices'][0]['message']['content']
 
-def chat(input_messages, system_prompt, max_tokens=512):
+def chat(input_messages, system_prompt, max_tokens=256):
     '''
     Literally just a helper function that queries GPT
     '''
@@ -168,7 +168,7 @@ Additional instructions: No additional instructions.
 Output:
 Ms. Smith, a 65-year-old woman, presents to the emergency department (ED) with a 3-day history of worsening shortness of breath, productive cough with yellowish sputum, and fever. She has a past medical history of hypertension, type 2 diabetes mellitus, and chronic obstructive pulmonary disease (COPD). She is a former smoker, having quit 10 years ago, and denies any recent travel, sick contacts, or exposure to tuberculosis. On further questioning, she reports feeling increasingly fatigued over the past week and has been experiencing night sweats.
 """.strip()
-        vignette = query_system(system_prompt, f"Case description: {case_description}\nAdditional instructions: {instructions}\n", max_tokens=2048).strip()
+        vignette = query_system(system_prompt, f"Case description: {case_description}\nAdditional instructions: {instructions}\n", max_tokens=256).strip()
 
         system_prompt = f"""You are a bot that creates realistic labs and findings based on a clinical vignette. Your goal is to create labs and findings that are as realistic as possible.
 
@@ -178,7 +178,7 @@ Vignette: Ms. Smith, a 65-year-old woman, presents to the emergency department (
 Output:
 Temperature: 38.5°C (101.3°F)\nBlood Pressure: 145/90 mmHg\nHeart Rate: 110 bpm\nRespiratory Rate: 22 breaths/min\nOxygen Saturation: 92% on room air\nComplete Blood Count (CBC):\n- WBC: 15,000 cells/µL (normal range: 4,500-11,000 cells/µL)\n- Hemoglobin: 12 g/dL (normal range: 12-16 g/dL)\n- Platelets: 300,000 cells/µL (normal range: 150,000-450,000 cells/µL)\nBlood Chemistry:\n- Sodium: 140 mmol/L (normal range: 135-145 mmol/L)\n- Potassium: 4.0 mmol/L (normal range: 3.5-5.0 mmol/L)\n- Creatinine: 1.0 mg/dL (normal range: 0.6-1.2 mg/dL)\n- Blood Urea Nitrogen (BUN): 20 mg/dL (normal range: 6-20 mg/dL)\n- Glucose: 180 mg/dL (normal range: 70-110 mg/dL)\nChest X-Ray: Right middle lobe consolidation consistent with pneumonia.
 """.strip()
-        labs = query_system(system_prompt, f"Vignette: {vignette}\n", max_tokens=2048).strip()
+        labs = query_system(system_prompt, f"Vignette: {vignette}\n", max_tokens=256).strip()
 
         learning_objectives = query_learning_objectives(clinical_vignette=vignette)
 
