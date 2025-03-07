@@ -19,7 +19,7 @@ def query_system(system_prompt, prompt, max_tokens=256):
                 {"role": "user", "content": prompt}]
 
     return client.chat.completions.create(
-          model="deepseek-reasoner",
+          model="deepseek-chat",
           messages=messages,
           max_tokens=max_tokens,
           temperature=0.8,
@@ -33,7 +33,7 @@ def query(prompt, max_tokens=256):
     messages = [{"role": "user", "content": prompt}]
 
     return client.chat.completions.create(
-          model="deepseek-reasoner",
+          model="deepseek-chat",
           messages=messages,
           max_tokens=max_tokens,
           temperature=0.8,
@@ -53,7 +53,7 @@ def chat(input_messages, system_prompt, max_tokens=256):
             messages.append({"role": "assistant", "content": message})
 
     return client.chat.completions.create(
-          model="deepseek-reasoner",
+          model="deepseek-chat",
           messages=messages,
           max_tokens=max_tokens,
           temperature=0.8,
