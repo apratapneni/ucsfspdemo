@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ardemis</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .header {
+            background-color: #525252;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1c7e6e;
+        }
+
+        .nav li {
+            float: left;
+        }
+
+        .nav li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        .nav li a:hover {
+            background-color: #111;
+        }
+
+        .main {
+            -ms-flex: 70%;
+            flex: 70%;
+            background-color: #525252;
+            padding: 20px;
+        }
+
+        .footer {
+            background-color: #f1f1f1;
+            padding: 10px;
+            text-align: center;
+        }
+
+        @media screen and (max-width: 700px) {
+            .row {
+                flex-direction: column;
+            }
+        }
+
+        @media screen and (max-width: 400px) {
+            .nav li {
+                float: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1 style="color: #f1f1f1;">Ardemis</h1>
+        <p style="color: #f1f1f1;">Medical Education</p>
+    </div>
+
+    <ul class="nav">
+        <li><a href=index.html>Home</a></li>
+        <li><a href=case_1.html>Cases</a></li>
+        <li><a href=random_case.html>Random Case</a></p>
+        <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeq9WRhqMUbYjEMdXgkBcHvdVKtglpYddx9zvPlmfl5opLvhw/viewform">Survey</a></li>
+    </ul>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="main" id="home">
+                <h2 style="color: #f1f1f1; font-size: 17px; text-align: center;">
+                    <p>
+                    Our AI-powered tool aims to supplement traditional methods of standardized patient practice available to aspiring healthcare providers via accessible simulation-based training available at your fingertips. With this tool, you will have the ability to generate unique, personalized patient scenarios that can be utilized to sharpen your diagnostic skills and clinical acumen. 
+                    </p>
+
+                    <p>
+                    If you would like to try our random case generation feature, feel free to navigate over to the Random Case tab, There, you can modify any patient parameters and enter your preferences in the text boxes provided. Once you are ready, proceed by clicking the Generate Patient button. Or, if you would like to try one of our pre-made cases, feel free to navigate to the Cases tab above.
+                    </p>
+
+                    <p>
+                    Following the completion of your scenario, please feel free to navigate over to the survey tab, where you will have the oppoetunity to provide feedback, which will be used to guide future optimizations of our program.
+                    </p>
+                </h2>
+
+            <hr style="border-color: #f1f1f1;">
+
+        <div class="column">
+            <div class="main" id="cases">
+                <h2 style="color: #f1f1f1;; text-align: center; ">Cases</h2>
+                <p><a href=case_1.html><h2 style= "text-align: center;">Case #1</a></p>
+            <div class="main" id="Random Case Generator">
+                <h2 style="color: #f1f1f1;">Random Case Generator</h2>
+                <p><a href=random_case.html>Random Case</a></p>
+        <!-- <p><a href=random_case.html>Random Case</a></p> -->
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy;  2023 Ardemis. All rights reserved.</p>
+    </div>
+
+    <script>
+        function showLoader() {
+            document.querySelector('.loader').style.display = 'block';
+        }
+    </script>
+
+</body>
+
+</html>
