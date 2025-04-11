@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegera One</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="prescreen" id="prescreen">
+            <h1>Welcome to Aegera One</h1>
+            <p>Generate a practice case by entering keywords of interest:</p>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Type a keyword (e.g., hypertension, rash, jaundice)">
+            </div>
+            <p style="margin-bottom: -5px;">Generate a random case:</p>
+            <button onclick="startChat('Generate')">Generate by Organ System</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='shared.js') }}"></script>
+    <script>
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Always use dark mode
+            setDarkModeOnly();
+            setupInputListeners();
+        });
+
+        // Setup input field listeners for search
+        function setupInputListeners() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        const searchQuery = this.value;
+                        if (searchQuery.trim()) {
+                            // Store the search query in localStorage
+                            localStorage.setItem('searchQuery', searchQuery);
+                            // Redirect to chat page
+                            window.location.href = 'chat.html?mode=search';
+                        }
+                    }
+                });
+            }
+        }
+
+        // Start a chat session for the selected system
+        function startChat(system) {
+            if (system === 'Generate') {
+                window.location.href = 'chat.html?mode=generate';
+            } else {
+                window.location.href = 'chat.html';
+            }
+        }
+    </script>
+</body>
+</html>

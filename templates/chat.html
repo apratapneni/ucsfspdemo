@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegera One - Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Typing indicator animation */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+        }
+
+        .typing-indicator .dot {
+            animation: typing 1.5s infinite;
+            margin-left: 4px;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes typing {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .info-section {
+            margin: 15px 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+        }
+        
+        .info-section h4 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .content-section {
+            padding: 5px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+        
+        .content-section p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header" id="chatHeader">
+                <span>Aegera One</span>
+                <div class="header-buttons">
+                    <button class="back-button" onclick="goBackToPrescreen()">Back to Prescreen</button>
+                    <button class="toggle-info-button" onclick="toggleInfoPanel()">Toggle Patient Info</button>
+                </div>
+            </div>
+            <div class="main-content" id="mainContent">
+                <!-- Chat Panel -->
+                <div class="chat-panel" id="chatPanel">
+                    <div class="chat-box" id="chatBox"></div>
+                    <div class="chat-input" id="chatInputContainer">
+                        <input type="text" id="userInput" placeholder="Type a message...">
+                        <button onclick="sendMessage()">Send</button>
+                        <button onclick="endScenario()" class="end-scenario-button">End Scenario</button>
+                    </div>
+                </div>
+                
+                <!-- Info Panel -->
+                <div class="info-panel" id="infoPanel">
+                    <div class="placeholder-image"></div>
+                    <div style="font-size: 18px; line-height: 1.6;">
+                        <strong>Patient Name:</strong> <br />
+                        <strong>Pronouns:</strong> <br />
+                        <strong>Age:</strong> <br />
+                        <strong>Height:</strong> <br />
+                        <strong>BMI:</strong>
+                    </div>
+
+                    <!-- Static panels instead of collapsibles -->
+                    <div class="info-section">
+                        <h4>Vital Signs</h4>
+                        <div id="vitalsContent" class="content-section">
+                            <p>Temperature: —</p>
+                            <p>Blood Pressure: —</p>
+                            <p>Heart Rate: —</p>
+                            <p>Respiratory Rate: —</p>
+                            <p>Oxygen Saturation: —</p>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>Lab Results</h4>
+                        <div id="labsContent" class="content-section">
+                            <p>No lab results available.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>Imaging Results</h4>
+                        <div id="imagingContent" class="content-section">
+                            <p>No imaging results available.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='shared.js') }}"></script>
+    <script>
+        let infoVisible = true;
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Always use dark mode
+            setDarkModeOnly();
+            
+            // Check URL parameters to determine the mode
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const mode = urlParams.get('mode');
+            
+            // Initialize patient info if coming from case generation
+            if (mode === 'random') {
+                const caseData = JSON.parse(localStorage.getItem('generatedCaseData') || '{}');
+                console.log("Parsed caseData:", caseData);
+                
+                // Parse and display vitals/labs
+                updatePatientInfoPanel(caseData);
+                
+                // Extract a greeting from the vignette
+                let greeting = "I'm your simulated patient. How can I help you today?";
+                if (caseData.vignette) {
+                    const sentences = caseData.vignette.split('.');
+                    const firstSentence = sentences[0].trim();
+                    if (firstSentence) {
+                        greeting = `*begin simulated patient encounter*`;
+                    }
+                }
+                
+                // Initialize chat with a greeting
+                displayMessage(greeting, 'aegera');
+            } else if (mode === 'search') {
+                const searchQuery = localStorage.getItem('searchQuery') || '';
+                displayMessage(`Please introduce yourself to start the interaction`, 'aegera');
+            } else {
+                displayMessage(`Please introduce yourself to start the interaction`, 'aegera');
+            }
+            
+            // Just setup input listeners; we don't need setupCollapsibles anymore
+            setupInputListeners();
+        });
+
+        // Setup input field listeners
+        function setupInputListeners() {
+            const userInput = document.getElementById('userInput');
+            if (userInput) {
+                userInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        }
+
+        // Toggle info panel visibility
+        function toggleInfoPanel() {
+            const infoPanel = document.getElementById('infoPanel');
+            const chatPanel = document.getElementById('chatPanel');
+            
+            infoVisible = !infoVisible;
+            
+            if (infoVisible) {
+                infoPanel.style.display = 'block';
+                chatPanel.style.width = '70%';
+            } else {
+                infoPanel.style.display = 'none';
+                chatPanel.style.width = '100%';
+            }
+        }
+
+        // Go back to the prescreen state
+        function goBackToPrescreen() {
+            window.location.href = 'index.html';
+        }
+
+        // Display a message in the chat box
+        function displayMessage(message, sender) {
+            const chatBox = document.getElementById('chatBox');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('chat-message');
+            if (sender === 'user') {
+                newMessage.classList.add('user-message');
+                newMessage.style.backgroundColor = '#007bff';
+                newMessage.style.color = 'white';
+            } else {
+                newMessage.classList.add('aegera-message');
+                newMessage.style.backgroundColor = '#444654';
+                newMessage.style.color = 'white';
+            }
+            newMessage.textContent = message;
+            chatBox.appendChild(newMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Handle sending a user message
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value;
+            if (message.trim()) {
+                displayMessage(message, 'user');
+                userInput.value = '';  // Clear input field
+                document.getElementById('userInput').disabled = true;
+                
+                try {
+                    // Get case data from localStorage
+                    const caseData = JSON.parse(localStorage.getItem('generatedCaseData') || '{}');
+                    
+                    // Collect all chat messages to maintain the conversation context
+                    const chatBox = document.getElementById('chatBox');
+                    const chatMessages = Array.from(chatBox.querySelectorAll('.chat-message')).map(msg => {
+                        const sender = msg.classList.contains('user-message') ? 'User' : 'Aegera';
+                        return `${sender}: ${msg.textContent}`;
+                    });
+                    
+                    // Add the latest message
+                    chatMessages.push(`User: ${message}`);
+                    
+                    // Prepare the data to send to the backend
+                    const requestData = {
+                        chat_history: chatMessages,
+                        vignette: caseData.vignette || '',
+                        labs: caseData.labs || '',
+                        learning_objectives: caseData.learning_objectives || ''
+                    };
+                    
+                    // Show a loading indicator
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.classList.add('chat-message', 'aegera-message', 'typing-indicator');
+                    typingIndicator.innerHTML = '<span>Aegera is typing</span><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
+                    typingIndicator.style.backgroundColor = '#444654';
+                    typingIndicator.style.color = 'white';
+                    chatBox.appendChild(typingIndicator);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    
+                    // Call the backend API
+                    const response = await fetch('/api/professor-response', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    // Process the response
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Remove typing indicator
+                        chatBox.removeChild(typingIndicator);
+                        // Display the real response from the LLM
+                        displayMessage(data.professor_response, 'aegera');
+                    } else {
+                        throw new Error('Server responded with an error');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    displayMessage("I'm sorry, I encountered an error processing your message. Please try again.", 'aegera');
+                } finally {
+                    document.getElementById('userInput').disabled = false;
+                    document.getElementById('userInput').focus();
+                }
+            }
+        }
+        
+        // Function to end the scenario and go to feedback page
+        function endScenario() {
+            // Get case data from localStorage
+            const caseData = JSON.parse(localStorage.getItem('generatedCaseData') || '{}');
+            
+            // Collect all chat messages
+            const chatBox = document.getElementById('chatBox');
+            const chatMessages = Array.from(chatBox.querySelectorAll('.chat-message')).map(msg => {
+                const sender = msg.classList.contains('user-message') ? 'User' : 'Patient';
+                return `${sender}: ${msg.textContent}`;
+            });
+            
+            // Store the data for feedback page
+            localStorage.setItem('chatHistory', JSON.stringify(chatMessages));
+            localStorage.setItem('fromChatPage', 'true');
+            
+            // Store case data components separately to ensure they're available
+            if (caseData) {
+                localStorage.setItem('caseVignette', caseData.vignette || '');
+                localStorage.setItem('caseLabs', caseData.labs || '');
+                localStorage.setItem('learningObjectives', caseData.learning_objectives || '');
+            }
+            
+            // Redirect to feedback page
+            window.location.href = 'feedback.html?source=chat';
+        }
+
+        // Add this function to handle updating the patient info panel
+        function updatePatientInfoPanel(caseData) {
+            if (!caseData) return;
+            
+            const vitalsBlock = document.getElementById('vitalsContent');
+            const labsBlock = document.getElementById('labsContent');
+            const imagingBlock = document.getElementById('imagingContent');
+
+            // Try to parse vitals and labs out of the raw string using simple heuristics
+            const vitals = (caseData.labs || '').split('\n').filter(line =>
+                /(Temperature|Blood Pressure|Heart Rate|Respiratory Rate|Oxygen Saturation)/i.test(line)
+            );
+
+            const labs = (caseData.labs || '').split('\n').filter(line =>
+                /(WBC|Hemoglobin|Platelets|Sodium|Potassium|Creatinine|BUN|Glucose|CBC|Chemistry)/i.test(line)
+            );
+            
+            const imaging = (caseData.labs || '').split('\n').filter(line =>
+                /(X-Ray|CT|MRI|Ultrasound|Imaging|Scan)/i.test(line)
+            );
+
+            if (vitals.length > 0 && vitalsBlock) {
+                vitalsBlock.innerHTML = vitals.map(v => `<p>${v}</p>`).join('');
+                // Reset max-height to null so it can be expanded later
+                vitalsBlock.style.maxHeight = null;
+            }
+
+            if (labs.length > 0 && labsBlock) {
+                labsBlock.innerHTML = labs.map(l => `<p>${l}</p>`).join('');
+                labsBlock.style.maxHeight = null;
+            }
+            
+            if (imaging.length > 0 && imagingBlock) {
+                imagingBlock.innerHTML = imaging.map(i => `<p>${i}</p>`).join('');
+                imagingBlock.style.maxHeight = null;
+            }
+            
+            // Extract patient demographics from vignette
+            if (caseData.vignette) {
+                const patientInfo = document.querySelector('.info-panel div[style]');
+                if (patientInfo) {
+                    // Try to extract name, age, gender
+                    const vignetteText = caseData.vignette;
+                    let patientName = "Unknown";
+                    let patientAge = "Unknown";
+                    let patientGender = "Unknown";
+                    
+                    // Extract name - usually the first part before a comma
+                    const nameMatch = vignetteText.match(/^([^,]+)/);
+                    if (nameMatch) {
+                        patientName = nameMatch[1].trim();
+                    }
+                    
+                    // Extract age
+                    const ageMatch = vignetteText.match(/(\d+)[-\s]year[-\s]old/i);
+                    if (ageMatch) {
+                        patientAge = ageMatch[1];
+                    }
+                    
+                    // Extract gender hints
+                    const genderMatch = vignetteText.match(/\b(man|woman|male|female)\b/i);
+                    if (genderMatch) {
+                        const gender = genderMatch[1].toLowerCase();
+                        patientGender = gender === 'man' || gender === 'male' ? 'Male' : 'Female';
+                    }
+                    
+                    patientInfo.innerHTML = `
+                        <strong>Patient Name:</strong> ${patientName} <br />
+                        <strong>Pronouns:</strong> ${patientGender === 'Male' ? 'He/Him' : patientGender === 'Female' ? 'She/Her' : 'Unknown'} <br />
+                        <strong>Age:</strong> ${patientAge} <br />
+                        <strong>Height:</strong> Not provided <br />
+                        <strong>BMI:</strong> Not provided
+                    `;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

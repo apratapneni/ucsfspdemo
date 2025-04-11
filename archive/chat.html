@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegera One - Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header" id="chatHeader">
+                <span>Aegera One</span>
+                <div class="header-buttons">
+                    <button class="back-button" onclick="goBackToPrescreen()">Back to Prescreen</button>
+                    <button class="toggle-info-button" onclick="toggleInfoPanel()">Toggle Patient Info</button>
+                </div>
+            </div>
+            <div class="main-content" id="mainContent">
+                <!-- Chat Panel -->
+                <div class="chat-panel" id="chatPanel">
+                    <div class="chat-box" id="chatBox"></div>
+                    <div class="chat-input" id="chatInputContainer">
+                        <input type="text" id="userInput" placeholder="Type a message...">
+                        <button onclick="sendMessage()">Send</button>
+                        <button onclick="endScenario()" class="end-scenario-button">End Scenario</button>
+                    </div>
+                </div>
+                
+                <!-- Info Panel -->
+                <div class="info-panel" id="infoPanel">
+                    <div class="placeholder-image"></div>
+                    <div style="font-size: 18px; line-height: 1.6;">
+                        <strong>Patient Name:</strong> <br />
+                        <strong>Pronouns:</strong> <br />
+                        <strong>Age:</strong> <br />
+                        <strong>Height:</strong> <br />
+                        <strong>BMI:</strong>
+                    </div>
+
+                    <!-- Collapsible Sections -->
+                    <button class="collapsible">Vital Signs</button>
+                    <div class="content">
+                        <p>Temperature: —</p>
+                        <p>Blood Pressure: —</p>
+                        <p>Heart Rate: —</p>
+                        <p>Respiratory Rate: —</p>
+                        <p>Oxygen Saturation: —</p>
+                    </div>
+
+                    <button class="collapsible">Lab Results</button>
+                    <div class="content">
+                        <p>No lab results available.</p>
+                    </div>
+
+                    <button class="collapsible">Imaging Results</button>
+                    <div class="content">
+                        <p>No imaging results available.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='shared.js') }}"></script>
+    <script>
+        let infoVisible = true;
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Always use dark mode
+            setDarkModeOnly();
+            
+            setupCollapsibles();
+            setupInputListeners();
+            
+            // Check URL parameters to determine the mode
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            const mode = urlParams.get('mode');
+            
+            // Initialize the chat based on the mode
+            if (mode === 'search') {
+                const searchQuery = localStorage.getItem('searchQuery') || '';
+                displayMessage(`Please introduce yourself to start the interaction`, 'aegera');
+            } else if (mode === 'generate') {
+                displayMessage(`Please choose an organ system`, 'aegera');
+            } else {
+                displayMessage(`Please introduce yourself to start the interaction`, 'aegera');
+            }
+        });
+
+        // Setup input field listeners
+        function setupInputListeners() {
+            const userInput = document.getElementById('userInput');
+            if (userInput) {
+                userInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        }
+
+        // Toggle info panel visibility
+        function toggleInfoPanel() {
+            const infoPanel = document.getElementById('infoPanel');
+            const chatPanel = document.getElementById('chatPanel');
+            
+            infoVisible = !infoVisible;
+            
+            if (infoVisible) {
+                infoPanel.style.display = 'block';
+                chatPanel.style.width = '70%';
+            } else {
+                infoPanel.style.display = 'none';
+                chatPanel.style.width = '100%';
+            }
+        }
+
+        // Go back to the prescreen state
+        function goBackToPrescreen() {
+            window.location.href = 'index.html';
+        }
+
+        // Display a message in the chat box
+        function displayMessage(message, sender) {
+            const chatBox = document.getElementById('chatBox');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('chat-message');
+            if (sender === 'user') {
+                newMessage.classList.add('user-message');
+                newMessage.style.backgroundColor = '#007bff';
+                newMessage.style.color = 'white';
+            } else {
+                newMessage.classList.add('aegera-message');
+                newMessage.style.backgroundColor = '#444654';
+                newMessage.style.color = 'white';
+            }
+            newMessage.textContent = message;
+            chatBox.appendChild(newMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Handle sending a user message
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value;
+            if (message.trim()) {
+                displayMessage(message, 'user');
+                userInput.value = '';  // Clear input field
+                setTimeout(() => {
+                    displayMessage("This is an automated response from Aegera One.", 'aegera');
+                }, 1000);
+            }
+        }
+        
+        // Function to end the scenario and go to feedback page
+        function endScenario() {
+            // Store any needed data in sessionStorage
+            sessionStorage.setItem('fromChatPage', 'true');
+            
+            // Redirect to feedback page
+            window.location.href = 'feedback.html?source=chat';
+        }
+    </script>
+</body>
+</html>
